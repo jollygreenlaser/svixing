@@ -11,6 +11,16 @@ Mold: https://github.com/rui314/mold
 
 Or just remove stuff from .cargo/config.toml
 
+After installing or removing those, to actually run:
+
+```
+rustup toolchain install nightly
+rustup default nightly
+rustup target add wasm32-unknown-unknown
+cargo install cargo-leptos
+cargo leptos watch
+```
+
 # Leptos Axum Starter Template
 
 This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool using [Axum](https://github.com/tokio-rs/axum).
