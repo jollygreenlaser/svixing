@@ -48,9 +48,9 @@ pub struct BazTask {
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AllTasks {
-    foo: Vec<FooTask>,
-    bar: Vec<BarTask>,
-    baz: Vec<BazTask>,
+    pub foo: Vec<FooTask>,
+    pub bar: Vec<BarTask>,
+    pub baz: Vec<BazTask>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

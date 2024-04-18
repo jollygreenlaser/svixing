@@ -40,19 +40,19 @@ pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
     Ok(db_client()
         .query_required_single(
             "select {
-        foo := (select FooTask {
-            status: { * },
-            given_id,
-        }),
-        bar := (select BarTask {
-            status: { * },
-            status_code,
-        }),
-        baz := (select BazTask {
-            status: { * },
-            rand_num,
-        })
-    }",
+                        foo := (select FooTask {
+                            status: { * },
+                            given_id,
+                        }),
+                        bar := (select BarTask {
+                            status: { * },
+                            status_code,
+                        }),
+                        baz := (select BazTask {
+                            status: { * },
+                            rand_num,
+                        })
+                    }",
             &(),
         )
         .await?)
@@ -102,11 +102,13 @@ fn HomePage() -> impl IntoView {
     let foo_id = create_rw_signal(None);
     let delay_seconds = create_rw_signal(0);
 
+    let task_data = create_resource(|| (), |_| async move { get_tasks().await });
+
     let add_task_action = create_action(move |task: &CreateTask| {
         let task = task.clone();
         async move {
             add_task(task, delay_seconds.get_untracked()).await?;
-            // series_data.refetch();
+            task_data.refetch();
             Ok(())
         }
     });
@@ -136,6 +138,25 @@ fn HomePage() -> impl IntoView {
             on:click=move |_| add_task_action.dispatch(CreateTask::Baz)>
             Add Baz
         </button>
+        <button on:click=move |_| task_data.refetch()>
+            Refresh Tasks
+        </button>
+        <Suspense
+            fallback=move || view! { <div></div> }
+        >
+            {move || task_data.get().map(|res| match res {
+                Ok(AllTasks { foo, bar, baz }) => {
+                    view! {
+                        <h1>Foo Tasks</h1>
+
+                        <h1>Bar Tasks</h1>
+
+                        <h1>Baz Tasks</h1>
+                    }.into_view()
+                }
+                Err(err) => format!("Could not fetch tasks: {err:?}").into_view(),
+            })}
+        </Suspense>
     </div>
     }
 }
