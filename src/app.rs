@@ -11,7 +11,6 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/svixbar.css"/>
         <Title text="FooBar"/>
         <Router fallback=|| {
             let mut outside_errors = Errors::default();
@@ -39,6 +38,7 @@ pub enum CreateTask {
 
 #[server(endpoint = "add_task")]
 pub async fn add_task(task: CreateTask) -> Result<(), ServerFnError> {
+    println!("Sees task: {task:?}");
     Ok(())
 }
 
@@ -59,12 +59,20 @@ fn HomePage() -> impl IntoView {
         <h1>"Task Manager"</h1>
         <ErrorDisplay res=add_task_action />
         <div>
-            <input id="foo_id" name="foo_id"
-                prop:value=foo_id on:input=move |ev| foo_id.set(Some(event_target_value(&ev)).filter(|v| !v.is_empty())) />
+            <input id="foo_id" name="foo_id" prop:value=move || foo_id().unwrap_or_default()
+                on:input=move |ev| foo_id.set(Some(event_target_value(&ev)).filter(|v| !v.is_empty())) />
             <button disabled=move || add_task_action.pending()() || foo_id().is_none()
                 on:click=move |_| add_task_action.dispatch(CreateTask::Foo(foo_id().unwrap_or_default()))>
                 Add Foo With ID: {move || foo_id()}
             </button>
         </div>
+        <button disabled=move || add_task_action.pending()()
+            on:click=move |_| add_task_action.dispatch(CreateTask::Bar)>
+            Add Bar
+        </button>
+        <button disabled=move || add_task_action.pending()()
+            on:click=move |_| add_task_action.dispatch(CreateTask::Baz)>
+            Add Baz
+        </button>
     }
 }
