@@ -40,11 +40,11 @@ impl IntoView for TaskStatus {
             finished_at_str,
         } = self;
         view! {
-            <p>Status Metadata</p>
             <p>Created at: {created_at_str}</p>
             <p>Execute at: {execute_after_str}</p>
             <p>Started at: {started_at_str.unwrap_or("Not started".to_string())}</p>
             <p>Finished at: {finished_at_str.unwrap_or("Not finished".to_string())}</p>
+            <hr/>
         }
         .into_view()
     }

@@ -94,7 +94,9 @@ pub async fn add_task(task: CreateTask, delay: i32) -> Result<(), ServerFnError>
         ),
     };
 
-    let _: ItemId = db_client().query_required_single(&query, &(input,)).await?;
+    let _: ItemId = db_client()
+        .query_required_single(&query, &(delay, input))
+        .await?;
 
     Ok(())
 }
