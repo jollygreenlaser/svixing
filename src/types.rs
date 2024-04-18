@@ -18,7 +18,6 @@ pub struct ItemId {
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct TaskStatus {
-    pub id: Uuid,
     pub created_at_str: String,
     pub execute_after_str: String,
     pub started_at_str: Option<String>,
@@ -39,7 +38,6 @@ impl IntoView for TaskStatus {
             execute_after_str,
             started_at_str,
             finished_at_str,
-            ..
         } = self;
         view! {
             <p>Status Metadata</p>

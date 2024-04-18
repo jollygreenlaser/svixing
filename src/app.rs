@@ -1,6 +1,6 @@
 use crate::client_utils::ErrorDisplay;
 use crate::error_template::{AppError, ErrorTemplate};
-use crate::types::{AllTasks, BarTask, BazTask, CreateTask, FooTask, TaskStatus};
+use crate::types::{AllTasks, BarTask, BazTask, CreateTask, FooTask, TaskStatus, STATUS_FIELDS};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -40,20 +40,22 @@ pub fn App() -> impl IntoView {
 pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
     Ok(db_client()
         .query_required_single(
-            "select {
-                        foo := (select FooTask {
-                            status: { * },
+            &format!(
+                "select {{
+                        foo := (select FooTask {{
+                            status: {STATUS_FIELDS},
                             given_id,
-                        }),
-                        bar := (select BarTask {
-                            status: { * },
+                        }}),
+                        bar := (select BarTask {{
+                            status: {STATUS_FIELDS},
                             status_code,
-                        }),
-                        baz := (select BazTask {
-                            status: { * },
+                        }}),
+                        baz := (select BazTask {{
+                            status: {STATUS_FIELDS},
                             rand_num,
-                        })
-                    }",
+                        }})
+                    }}"
+            ),
             &(),
         )
         .await?)
