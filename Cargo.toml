@@ -45,6 +45,15 @@ ssr = [
     "dep:tracing",
 ]
 
+[profile.dev]
+split-debuginfo = "unpacked"
+[profile.dev.package."*"]
+opt-level = 3
+
+# Defines a profile for using cranelift in server dev 
+[profile.server-dev]
+inherits = "dev"
+
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
 inherits = "release"
@@ -114,3 +123,5 @@ lib-default-features = false
 #
 # Optional. Defaults to "release".
 lib-profile-release = "wasm-release"
+
+bin-profile-dev = "server-dev"

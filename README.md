@@ -3,6 +3,14 @@
     <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo">
 </picture>
 
+# Other Notes
+
+Cranelift: https://github.com/rust-lang/rustc_codegen_cranelift
+
+Mold: https://github.com/rui314/mold
+
+Or just remove stuff from .cargo/config.toml
+
 # Leptos Axum Starter Template
 
 This is a template for use with the [Leptos](https://github.com/leptos-rs/leptos) web framework and the [cargo-leptos](https://github.com/akesson/cargo-leptos) tool using [Axum](https://github.com/tokio-rs/axum).
