@@ -44,7 +44,7 @@ fn make_query(task_name: &str, shape: &str) -> String {
 
 async fn do_bar(BarTask { id, status_id }: BarTask, req: &ReqClient, db: &Client) {
     let status_code = match req
-        .get("https://www.whattimeisitrightnow.com")
+        .get("https://www.xkcd.com") // Was only getting 400's on the time URL
         .send()
         .await {
             Ok(res) => res.status().as_u16() as i32,
@@ -53,6 +53,8 @@ async fn do_bar(BarTask { id, status_id }: BarTask, req: &ReqClient, db: &Client
                 return;
             }
         };
+
+    println!("Bar task [{id}] got status code: {status_code}");
 
     match db.query_json("select {
             st := (
