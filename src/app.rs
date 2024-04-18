@@ -38,30 +38,26 @@ pub fn App() -> impl IntoView {
 
 #[server(endpoint = "get_tasks")]
 pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
-    Ok(db_client()
-        .query_required_single(
-            &format!(
-                "select {{
-                        foo := (select FooTask {{
-                            id,
-                            status: {STATUS_FIELDS},
-                            given_id,
-                        }}),
-                        bar := (select BarTask {{
-                            id,
-                            status: {STATUS_FIELDS},
-                            status_code,
-                        }}),
-                        baz := (select BazTask {{
-                            id,
-                            status: {STATUS_FIELDS},
-                            rand_num,
-                        }})
-                    }}"
-            ),
-            &(),
-        )
-        .await?)
+    let query = format!(
+        "select {{
+                foo := (select FooTask {{
+                    id,
+                    {STATUS_FIELDS},
+                    given_id,
+                }} order by .status.created_at asc),
+                bar := (select BarTask {{
+                    id,
+                    {STATUS_FIELDS},
+                    status_code,
+                }} order by .status.created_at asc),
+                baz := (select BazTask {{
+                    id,
+                    {STATUS_FIELDS},
+                    rand_num,
+                }} order by .status.created_at asc)
+            }}"
+    );
+    Ok(db_client().query_required_single(&query, &()).await?)
 }
 
 #[server(endpoint = "add_task")]
@@ -154,10 +150,11 @@ fn HomePage() -> impl IntoView {
                 Ok(AllTasks { foo, bar, baz }) => {
                     view! {
                         <h1>Foo Tasks</h1>
-
+                        {foo}
                         <h1>Bar Tasks</h1>
-
+                        {bar}
                         <h1>Baz Tasks</h1>
+                        {baz}
                     }.into_view()
                 }
                 Err(err) => format!("Could not fetch tasks: {err:?}").into_view(),

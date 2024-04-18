@@ -24,7 +24,7 @@ pub struct TaskStatus {
     pub finished_at_str: Option<String>,
 }
 
-pub const STATUS_FIELDS: &str = "{
+pub const STATUS_FIELDS: &str = "status := .status {
     created_at_str := <str>.created_at,
     execute_after_str := <str>.execute_after,
     started_at_str := <str>.started_at,
@@ -66,7 +66,7 @@ impl IntoView for FooTask {
             given_id,
         } = self;
         view! {
-            <p>Foo: {id.to_string()}</p>
+            <p>ID: {id.to_string()}</p>
             <p>Given ID: {given_id}</p>
             {status}
         }
@@ -90,7 +90,7 @@ impl IntoView for BarTask {
             status_code,
         } = self;
         view! {
-            <p>Foo: {id.to_string()}</p>
+            <p>ID: {id.to_string()}</p>
             <p>Status code: {status_code.map(|sc| sc.to_string()).unwrap_or("Not run".to_string())}</p>
             {status}
         }
@@ -114,7 +114,7 @@ impl IntoView for BazTask {
             rand_num,
         } = self;
         view! {
-            <p>Foo: {id.to_string()}</p>
+            <p>ID: {id.to_string()}</p>
             <p>Random number: {rand_num.map(|rn| rn.to_string()).unwrap_or("Not run".to_string())}</p>
             {status}
         }
