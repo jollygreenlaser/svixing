@@ -60,6 +60,15 @@ pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
     Ok(db_client().query_required_single(&query, &()).await?)
 }
 
+#[server(endpoint = "clear_tasks")]
+pub async fn clear_tasks() -> Result<(), ServerFnError> {
+    let _: Vec<ItemId> = db_client()
+        .query(&"delete FooTask; delete BarTask; delete BazTask;", &())
+        .await?;
+
+    Ok(())
+}
+
 #[server(endpoint = "add_task")]
 pub async fn add_task(task: CreateTask, delay: i32) -> Result<(), ServerFnError> {
     println!("Sees task: {task:?} with delay: {delay}");
@@ -117,6 +126,12 @@ fn HomePage() -> impl IntoView {
         }
     });
 
+    let clear_tasks_action = create_action(move |_: &()| async move {
+        clear_tasks().await?;
+        task_data.refetch();
+        Ok(())
+    });
+
     view! {
     <div>
         <h1>"Task Manager"</h1>
@@ -144,6 +159,11 @@ fn HomePage() -> impl IntoView {
         </button>
         <button on:click=move |_| task_data.refetch()>
             Refresh Tasks
+        </button>
+        <ErrorDisplay res=clear_tasks_action />
+        <button disabled=move || clear_tasks_action.pending()()
+            on:click=move |_| clear_tasks_action.dispatch(())>
+            Clear Tasks
         </button>
         <Suspense
             fallback=move || view! { <div></div> }
