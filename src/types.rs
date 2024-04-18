@@ -7,11 +7,6 @@ cfg_if::cfg_if! {
 if #[cfg(feature = "ssr")] {
 use edgedb_derive::Queryable;
 
-#[derive(Queryable, Debug)]
-pub struct ItemId {
-    pub id: Uuid,
-}
-
 pub const STATUS_FIELDS: &str = "status := .status {
     created_at_str := <str>.created_at,
     execute_after_str := <str>.execute_after,
@@ -22,7 +17,13 @@ pub const STATUS_FIELDS: &str = "status := .status {
 }
 }
 
-#[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
+#[cfg_attr(feature = "ssr", derive(Queryable))]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ItemId {
+    pub id: Uuid,
+}
+
+#[cfg_attr(feature = "ssr", derive(Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct TaskStatus {
     pub created_at_str: String,
@@ -50,7 +51,7 @@ impl IntoView for TaskStatus {
     }
 }
 
-#[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
+#[cfg_attr(feature = "ssr", derive(Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FooTask {
     pub id: Uuid,
@@ -74,7 +75,7 @@ impl IntoView for FooTask {
     }
 }
 
-#[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
+#[cfg_attr(feature = "ssr", derive(Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BarTask {
     pub id: Uuid,
@@ -98,7 +99,7 @@ impl IntoView for BarTask {
     }
 }
 
-#[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
+#[cfg_attr(feature = "ssr", derive(Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BazTask {
     pub id: Uuid,
@@ -122,7 +123,7 @@ impl IntoView for BazTask {
     }
 }
 
-#[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
+#[cfg_attr(feature = "ssr", derive(Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct AllTasks {
     pub foo: Vec<FooTask>,

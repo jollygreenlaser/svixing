@@ -1,6 +1,6 @@
 use crate::client_utils::ErrorDisplay;
 use crate::error_template::{AppError, ErrorTemplate};
-use crate::types::{AllTasks, CreateTask};
+use crate::types::{AllTasks, CreateTask, ItemId};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -8,7 +8,7 @@ use leptos_router::*;
 cfg_if::cfg_if! {
 if #[cfg(feature = "ssr")] {
 use crate::server_utils::db_client;
-use crate::types::{ItemId, STATUS_FIELDS};
+use crate::types::{STATUS_FIELDS};
 }
 }
 
@@ -73,7 +73,7 @@ pub async fn clear_tasks() -> Result<(), ServerFnError> {
 }
 
 #[server(endpoint = "add_task")]
-pub async fn add_task(task: CreateTask, delay: i32) -> Result<(), ServerFnError> {
+pub async fn add_task(task: CreateTask, delay: i32) -> Result<ItemId, ServerFnError> {
     println!("Sees task: {task:?} with delay: {delay}");
 
     let status_insert = "(insert TaskStatus {
@@ -106,11 +106,11 @@ pub async fn add_task(task: CreateTask, delay: i32) -> Result<(), ServerFnError>
         ),
     };
 
-    let _: ItemId = db_client()
+    let id = db_client()
         .query_required_single(&query, &(delay, input))
         .await?;
 
-    Ok(())
+    Ok(id)
 }
 
 #[component]
@@ -123,7 +123,7 @@ fn HomePage() -> impl IntoView {
     let add_task_action = create_action(move |task: &CreateTask| {
         let task = task.clone();
         async move {
-            add_task(task, delay_seconds.get_untracked()).await?;
+            let _: ItemId = add_task(task, delay_seconds.get_untracked()).await?;
             task_data.refetch();
             Ok(())
         }
