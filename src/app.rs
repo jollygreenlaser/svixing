@@ -45,6 +45,7 @@ pub async fn add_task(task: CreateTask) -> Result<(), ServerFnError> {
 #[component]
 fn HomePage() -> impl IntoView {
     let foo_id = create_rw_signal(None);
+    let delay_seconds = create_rw_signal(0);
 
     let add_task_action = create_action(move |task: &CreateTask| {
         let task = task.clone();
@@ -58,8 +59,10 @@ fn HomePage() -> impl IntoView {
     view! {
         <h1>"Task Manager"</h1>
         <ErrorDisplay res=add_task_action />
+        <input prop:value=delay_seconds
+                on:input=move |ev| delay_seconds.set(event_target_value(&ev).parse().unwrap_or_default()) />
         <div>
-            <input id="foo_id" name="foo_id" prop:value=move || foo_id().unwrap_or_default()
+            <input prop:value=move || foo_id().unwrap_or_default()
                 on:input=move |ev| foo_id.set(Some(event_target_value(&ev)).filter(|v| !v.is_empty())) />
             <button disabled=move || add_task_action.pending()() || foo_id().is_none()
                 on:click=move |_| add_task_action.dispatch(CreateTask::Foo(foo_id().unwrap_or_default()))>

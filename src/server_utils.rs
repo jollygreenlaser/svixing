@@ -1,18 +1,16 @@
 cfg_if::cfg_if! {
 if #[cfg(feature = "ssr")] {
 // Copy/pasted utils from my other codebases
-use edgedb_protocol::model::Uuid;
 use edgedb_tokio::{Builder, Client};
 use std::{
     sync::OnceLock,
-    time::{Duration, SystemTime},
 };
 
 static EDGEDB: OnceLock<Client> = OnceLock::new();
 
-async fn init_db() {
+pub async fn init_db() {
     let alt = Builder::new()
-        .instance(env!("DB_INSTANCE"))
+        .instance("svixedb") // Would env var in prod
         .unwrap()
         .build_env()
         .await.unwrap();
