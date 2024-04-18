@@ -35,6 +35,7 @@ pub fn App() -> impl IntoView {
         </Router>
     }
 }
+
 #[server(endpoint = "get_tasks")]
 pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
     Ok(db_client()
