@@ -43,14 +43,17 @@ pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
             &format!(
                 "select {{
                         foo := (select FooTask {{
+                            id,
                             status: {STATUS_FIELDS},
                             given_id,
                         }}),
                         bar := (select BarTask {{
+                            id,
                             status: {STATUS_FIELDS},
                             status_code,
                         }}),
                         baz := (select BazTask {{
+                            id,
                             status: {STATUS_FIELDS},
                             rand_num,
                         }})

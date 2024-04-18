@@ -53,22 +53,73 @@ impl IntoView for TaskStatus {
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct FooTask {
+    pub id: Uuid,
     pub status: TaskStatus,
     pub given_id: String,
+}
+
+impl IntoView for FooTask {
+    fn into_view(self) -> View {
+        let FooTask {
+            id,
+            status,
+            given_id,
+        } = self;
+        view! {
+            <p>Foo: {id.to_string()}</p>
+            <p>Given ID: {given_id}</p>
+            {status}
+        }
+        .into_view()
+    }
 }
 
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BarTask {
+    pub id: Uuid,
     pub status: TaskStatus,
     pub status_code: Option<i32>, // u32 may be more semantically correct, but edgedb only has i32
+}
+
+impl IntoView for BarTask {
+    fn into_view(self) -> View {
+        let BarTask {
+            id,
+            status,
+            status_code,
+        } = self;
+        view! {
+            <p>Foo: {id.to_string()}</p>
+            <p>Status code: {status_code.map(|sc| sc.to_string()).unwrap_or("Not run".to_string())}</p>
+            {status}
+        }
+        .into_view()
+    }
 }
 
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct BazTask {
+    pub id: Uuid,
     pub status: TaskStatus,
     pub rand_num: Option<i32>,
+}
+
+impl IntoView for BazTask {
+    fn into_view(self) -> View {
+        let BazTask {
+            id,
+            status,
+            rand_num,
+        } = self;
+        view! {
+            <p>Foo: {id.to_string()}</p>
+            <p>Random number: {rand_num.map(|rn| rn.to_string()).unwrap_or("Not run".to_string())}</p>
+            {status}
+        }
+        .into_view()
+    }
 }
 
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
