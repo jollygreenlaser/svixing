@@ -9,6 +9,7 @@ use std::time::Duration;
 use reqwest::Client as ReqClient;
 use serde::Serialize;
 use futures::{stream, StreamExt};
+use rand::{prelude::thread_rng, Rng};
 
 
 #[derive(Debug, Clone, Queryable)]
@@ -19,7 +20,7 @@ struct FooTask {
 }
 
 #[derive(Debug, Clone, Queryable, Serialize)]
-struct BarTask {
+struct GenericTask {
     id: Uuid,
     status_id: Uuid,
 }
@@ -42,7 +43,7 @@ fn make_query(task_name: &str, shape: &str) -> String {
     }}")
 }
 
-async fn do_bar(BarTask { id, status_id }: BarTask, req: &ReqClient, db: &Client) {
+async fn do_bar(GenericTask { id, status_id }: GenericTask, req: &ReqClient, db: &Client) {
     let status_code = match req
         .get("https://www.xkcd.com") // Was only getting 400's on the time URL
         .send()
@@ -75,6 +76,36 @@ async fn do_bar(BarTask { id, status_id }: BarTask, req: &ReqClient, db: &Client
         Ok(_) => (),
         Err(err) => {
             println!("Failed to update bar: {err:?}");
+        },
+    };
+}
+
+async fn do_baz(GenericTask { id, status_id }: GenericTask, db: &Client) {
+    // let rand_num = 4; // Sufficiently random, between 0 and 343 inclusive
+    let rand_num = thread_rng().gen_range(0..=343);
+
+    println!("Baz task [{id}] got random number: {rand_num}");
+
+    // Could probably find some code reuse here but eh
+    match db.query_json("select {
+            st := (
+                update TaskStatus
+                filter .id = <uuid>$0
+                set {
+                    finished_at := datetime_of_statement()
+                }
+            ),
+            bar := (
+                update BazTask
+                filter .id = <uuid>$1
+                set {
+                    rand_num := <int32>$2
+                }
+            )
+        }", &(status_id, id, rand_num)).await {
+        Ok(_) => (),
+        Err(err) => {
+            println!("Failed to update baz: {err:?}");
         },
     };
 }
@@ -126,7 +157,7 @@ pub fn start_worker() {
             sleep(Duration::from_millis(1000)).await;
 
             let query = make_query("BarTask", "");
-            let tasks: Vec<BarTask> = match db.query(&query, &()).await {
+            let tasks: Vec<GenericTask> = match db.query(&query, &()).await {
                 Ok(tasks) => tasks,
                 Err(err) => {
                     println!("Failed to fetch bars: {err:?}");
@@ -141,7 +172,7 @@ pub fn start_worker() {
                     let req = ReqClient::new();
                     stream::iter(tasks.into_iter())
                         .map(|bar| do_bar(bar, &req, &db))
-                        .buffer_unordered(4) // Sufficiently arbitrary magic number
+                        .buffer_unordered(4) // Arbitrary magic number
                         .collect::<Vec<()>>()
                         .await;
                 });
@@ -149,7 +180,32 @@ pub fn start_worker() {
         }
     });
 
-    // Baz tasks are left as an exercise to the reader
+    tokio::spawn(async move {
+        loop {
+            sleep(Duration::from_millis(1000)).await;
+
+            let query = make_query("BazTask", "");
+            let tasks: Vec<GenericTask> = match db.query(&query, &()).await {
+                Ok(tasks) => tasks,
+                Err(err) => {
+                    println!("Failed to fetch bazs: {err:?}");
+                    continue;
+                },
+            };
+
+            if !tasks.is_empty() {
+                println!("Spawning tasks for bazs: {tasks:?}");
+                // Hooray code duplication
+                tokio::spawn(async move {
+                    stream::iter(tasks.into_iter())
+                        .map(|bar| do_baz(bar, &db))
+                        .buffer_unordered(4) // Arbitrary magic number
+                        .collect::<Vec<()>>()
+                        .await;
+                });
+            }
+        }
+    });
 }
 
 }
