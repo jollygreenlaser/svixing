@@ -1,6 +1,6 @@
 use crate::client_utils::ErrorDisplay;
 use crate::error_template::{AppError, ErrorTemplate};
-use crate::types::{AllTasks, BarTask, BazTask, CreateTask, FooTask, TaskStatus, STATUS_FIELDS};
+use crate::types::{AllTasks, CreateTask};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -8,7 +8,7 @@ use leptos_router::*;
 cfg_if::cfg_if! {
 if #[cfg(feature = "ssr")] {
 use crate::server_utils::db_client;
-use crate::types::ItemId;
+use crate::types::{ItemId, STATUS_FIELDS};
 }
 }
 
@@ -38,6 +38,8 @@ pub fn App() -> impl IntoView {
 
 #[server(endpoint = "get_tasks")]
 pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
+    // TODO filters
+    // This data model isn't great - it should probably be inverted, with a Task owning a job metadata, instead of job metadata owning Status
     let query = format!(
         "select {{
                 foo := (select FooTask {{
@@ -62,6 +64,7 @@ pub async fn get_tasks() -> Result<AllTasks, ServerFnError> {
 
 #[server(endpoint = "clear_tasks")]
 pub async fn clear_tasks() -> Result<(), ServerFnError> {
+    // TODO clear specific task by ID
     let _: Vec<ItemId> = db_client()
         .query(&"delete FooTask; delete BarTask; delete BazTask;", &())
         .await?;

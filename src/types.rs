@@ -12,6 +12,13 @@ pub struct ItemId {
     pub id: Uuid,
 }
 
+pub const STATUS_FIELDS: &str = "status := .status {
+    created_at_str := <str>.created_at,
+    execute_after_str := <str>.execute_after,
+    started_at_str := <str>.started_at,
+    finished_at_str := <str>.finished_at,
+}";
+
 }
 }
 
@@ -23,13 +30,6 @@ pub struct TaskStatus {
     pub started_at_str: Option<String>,
     pub finished_at_str: Option<String>,
 }
-
-pub const STATUS_FIELDS: &str = "status := .status {
-    created_at_str := <str>.created_at,
-    execute_after_str := <str>.execute_after,
-    started_at_str := <str>.started_at,
-    finished_at_str := <str>.finished_at,
-}";
 
 impl IntoView for TaskStatus {
     fn into_view(self) -> View {

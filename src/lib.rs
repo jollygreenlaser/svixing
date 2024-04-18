@@ -5,6 +5,7 @@ pub mod error_template;
 pub mod fileserv;
 pub mod server_utils;
 pub mod types;
+pub mod worker;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

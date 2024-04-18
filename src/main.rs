@@ -8,6 +8,7 @@ async fn main() {
     use svixbar::fileserv::file_and_error_handler;
 
     svixbar::server_utils::init_db().await;
+    svixbar::worker::start_worker();
 
     // Setting get_configuration(None) means we'll be using cargo-leptos's env values
     // For deployment these variables are:
