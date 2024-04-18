@@ -5,6 +5,13 @@ use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 
+cfg_if::cfg_if! {
+if #[cfg(feature = "ssr")] {
+use crate::server_utils::db_client;
+use crate::types::ItemId;
+}
+}
+
 #[component]
 pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
@@ -30,8 +37,41 @@ pub fn App() -> impl IntoView {
 }
 
 #[server(endpoint = "add_task")]
-pub async fn add_task(task: CreateTask, delay: u32) -> Result<(), ServerFnError> {
+pub async fn add_task(task: CreateTask, delay: i32) -> Result<(), ServerFnError> {
     println!("Sees task: {task:?} with delay: {delay}");
+
+    let status_insert = "(insert TaskStatus {
+        execute_after := datetime_of_statement() + to_duration(seconds := <int32>$0),
+    })";
+
+    // Exposing a weakness of the Rust edgedb bindings - it doesn't yet handle named args
+    // Thus the tasks with no input need a dummy binding
+    let (input, query) = match task {
+        CreateTask::Foo(given_id) => (
+            Some(given_id),
+            format!(
+                "insert FooTask {{
+            status := {status_insert},
+            given_id := <str>$1
+        }}"
+            ),
+        ),
+        CreateTask::Bar => (
+            None,
+            format!(
+                "with dummy := <optional str>$1 insert BarTask {{ status := {status_insert} }}"
+            ),
+        ),
+        CreateTask::Baz => (
+            None,
+            format!(
+                "with dummy := <optional str>$1 insert BazTask {{ status := {status_insert} }}"
+            ),
+        ),
+    };
+
+    let _: ItemId = db_client().query_required_single(&query, &(input,)).await?;
+
     Ok(())
 }
 

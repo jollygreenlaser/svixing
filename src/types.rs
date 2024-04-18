@@ -1,5 +1,18 @@
 use serde::{Deserialize, Serialize};
 
+cfg_if::cfg_if! {
+if #[cfg(feature = "ssr")] {
+use edgedb_protocol::model::Uuid;
+use edgedb_derive::Queryable;
+
+#[derive(Queryable, Debug)]
+pub struct ItemId {
+    pub id: Uuid,
+}
+
+}
+}
+
 #[cfg_attr(feature = "ssr", derive(edgedb_derive::Queryable))]
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct TaskStatus {
