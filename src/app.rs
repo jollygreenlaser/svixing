@@ -1,3 +1,4 @@
+use crate::client_utils::ErrorDisplay;
 use crate::error_template::{AppError, ErrorTemplate};
 use leptos::*;
 use leptos_meta::*;
@@ -43,11 +44,27 @@ pub async fn add_task(task: CreateTask) -> Result<(), ServerFnError> {
 
 #[component]
 fn HomePage() -> impl IntoView {
-    let (count, set_count) = create_signal(0);
-    let on_click = move |_| set_count.update(|count| *count += 1);
+    let foo_id = create_rw_signal(None);
+
+    let add_task_action = create_action(move |task: &CreateTask| {
+        let task = task.clone();
+        async move {
+            add_task(task).await?;
+            // series_data.refetch();
+            Ok(())
+        }
+    });
 
     view! {
         <h1>"Task Manager"</h1>
-        <button on:click=on_click>Add Foo Task</button>
+        <ErrorDisplay res=add_task_action />
+        <div>
+            <input id="foo_id" name="foo_id"
+                prop:value=foo_id on:input=move |ev| foo_id.set(Some(event_target_value(&ev)).filter(|v| !v.is_empty())) />
+            <button disabled=move || add_task_action.pending()() || foo_id().is_none()
+                on:click=move |_| add_task_action.dispatch(CreateTask::Foo(foo_id().unwrap_or_default()))>
+                Add Foo With ID: {move || foo_id()}
+            </button>
+        </div>
     }
 }
