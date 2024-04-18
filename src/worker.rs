@@ -146,15 +146,10 @@ pub fn start_worker() {
                         .await;
                 });
             }
-
         }
     });
 
-    // tokio::spawn(async move {
-    //     loop {
-    //         let tasks
-    //     }
-    // });
+    // Baz tasks are left as an exercise to the reader
 }
 
 }
