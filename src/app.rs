@@ -1,9 +1,9 @@
 use crate::client_utils::ErrorDisplay;
 use crate::error_template::{AppError, ErrorTemplate};
+use crate::types::{BarTask, BazTask, CreateTask, FooTask, TaskStatus};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
-use serde::{Deserialize, Serialize};
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -29,16 +29,9 @@ pub fn App() -> impl IntoView {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub enum CreateTask {
-    Foo(String),
-    Bar,
-    Baz,
-}
-
 #[server(endpoint = "add_task")]
-pub async fn add_task(task: CreateTask) -> Result<(), ServerFnError> {
-    println!("Sees task: {task:?}");
+pub async fn add_task(task: CreateTask, delay: u32) -> Result<(), ServerFnError> {
+    println!("Sees task: {task:?} with delay: {delay}");
     Ok(())
 }
 
@@ -50,17 +43,21 @@ fn HomePage() -> impl IntoView {
     let add_task_action = create_action(move |task: &CreateTask| {
         let task = task.clone();
         async move {
-            add_task(task).await?;
+            add_task(task, delay_seconds.get_untracked()).await?;
             // series_data.refetch();
             Ok(())
         }
     });
 
     view! {
+    <div>
         <h1>"Task Manager"</h1>
         <ErrorDisplay res=add_task_action />
-        <input prop:value=delay_seconds
-                on:input=move |ev| delay_seconds.set(event_target_value(&ev).parse().unwrap_or_default()) />
+        <div>
+            <input prop:value=delay_seconds
+                    on:input=move |ev| delay_seconds.set(event_target_value(&ev).parse().unwrap_or_default()) />
+            <span>Delay Seconds</span>
+        </div>
         <div>
             <input prop:value=move || foo_id().unwrap_or_default()
                 on:input=move |ev| foo_id.set(Some(event_target_value(&ev)).filter(|v| !v.is_empty())) />
@@ -77,5 +74,6 @@ fn HomePage() -> impl IntoView {
             on:click=move |_| add_task_action.dispatch(CreateTask::Baz)>
             Add Baz
         </button>
+    </div>
     }
 }
